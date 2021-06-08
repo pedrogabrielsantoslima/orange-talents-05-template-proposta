@@ -2,6 +2,7 @@ package com.example.zupacademy.pedrogabriel.proposta.request;
 
 import com.example.zupacademy.pedrogabriel.proposta.model.Proposta;
 import com.example.zupacademy.pedrogabriel.proposta.validator.CPFOrCNPJ;
+import com.example.zupacademy.pedrogabriel.proposta.validator.UniqueValue;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -21,6 +22,7 @@ public class PropostaRequest {
     private String endereco;
 
     @CPFOrCNPJ
+    @UniqueValue(fieldName = "cpf_cnpj", model = Proposta.class)
     private String cpf_cnpj;
 
     @NotNull(message = "O salario é obrigatório")
