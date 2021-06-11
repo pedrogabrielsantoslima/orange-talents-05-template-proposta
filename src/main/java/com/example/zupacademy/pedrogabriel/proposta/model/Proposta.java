@@ -1,5 +1,7 @@
 package com.example.zupacademy.pedrogabriel.proposta.model;
 
+import com.example.zupacademy.pedrogabriel.proposta.enums.StatusPropostaEnum;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 
@@ -19,6 +21,8 @@ public class Proposta {
     private String cpf_cnpj;
     @Column(nullable = false)
     private BigDecimal salario = new BigDecimal(0.1);
+    @Enumerated(EnumType.STRING)
+    private StatusPropostaEnum status;
 
     @Deprecated
     public Proposta(){}
@@ -53,5 +57,13 @@ public class Proposta {
 
     public BigDecimal getSalario() {
         return salario;
+    }
+
+    public StatusPropostaEnum getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusPropostaEnum status) {
+        this.status = status;
     }
 }
