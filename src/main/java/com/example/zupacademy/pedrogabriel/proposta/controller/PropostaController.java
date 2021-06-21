@@ -43,6 +43,14 @@ public class PropostaController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("/{id}")
+    public List<PropostaResponse> listar(@PathVariable Integer id) {
+        return propostaRepository.findById(id)
+                .stream()
+                .map(PropostaResponse::converterDe)
+                .collect(Collectors.toList());
+    }
+
     @PostMapping
     @Transactional
     public ResponseEntity<PropostaResponse> cadastrar(@Valid @RequestBody PropostaRequest propostaRequest) {
