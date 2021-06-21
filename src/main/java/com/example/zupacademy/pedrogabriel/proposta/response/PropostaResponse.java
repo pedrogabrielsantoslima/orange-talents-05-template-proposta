@@ -10,6 +10,7 @@ public class PropostaResponse extends PropostaRequest {
 
     private Integer id;
     private StatusPropostaEnum status;
+    private String numero_cartao;
 
     public PropostaResponse(String nome, String email, String endereco, String cpf_cnpj, BigDecimal salario) {
         super(nome, email, endereco, cpf_cnpj, salario);
@@ -31,12 +32,21 @@ public class PropostaResponse extends PropostaRequest {
         this.status = status;
     }
 
+    public String getNumero_cartao() {
+        return numero_cartao;
+    }
+
+    public void setNumero_cartao(String numero_cartao) {
+        this.numero_cartao = numero_cartao;
+    }
+
     public static PropostaResponse converterDe(Proposta proposta) {
         PropostaResponse propostaResponse = new PropostaResponse(proposta.getNome(), proposta.getEmail(),
                 proposta.getEndereco(), proposta.getCpf_cnpj(), proposta.getSalario());
 
         propostaResponse.id = proposta.getId();
         propostaResponse.status = proposta.getStatus();
+        propostaResponse.numero_cartao = proposta.getNumero_cartao();
 
         return propostaResponse;
     }

@@ -21,6 +21,8 @@ public class Proposta {
     private String cpf_cnpj;
     @Column(nullable = false)
     private BigDecimal salario = new BigDecimal(0.1);
+    @Column(length = 19)
+    private String numero_cartao;
     @Enumerated(EnumType.STRING)
     private StatusPropostaEnum status;
 
@@ -63,7 +65,15 @@ public class Proposta {
         return status;
     }
 
+    public String getNumero_cartao() {
+        return numero_cartao;
+    }
+
     public void setStatus(StatusPropostaEnum status) {
         this.status = status;
+    }
+
+    public void setNumero_cartao(String numero_cartao) {
+        this.numero_cartao = numero_cartao;
     }
 }

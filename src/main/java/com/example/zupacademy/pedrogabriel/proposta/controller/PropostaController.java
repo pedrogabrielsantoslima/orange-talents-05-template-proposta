@@ -1,14 +1,16 @@
 package com.example.zupacademy.pedrogabriel.proposta.controller;
 
 import com.example.zupacademy.pedrogabriel.proposta.enums.StatusPropostaEnum;
+import com.example.zupacademy.pedrogabriel.proposta.feign.CadastrarCartaoFeign;
 import com.example.zupacademy.pedrogabriel.proposta.feign.SolicitacaoPropostaFeign;
+import com.example.zupacademy.pedrogabriel.proposta.feign.model.CadastrarCartaoRequest;
+import com.example.zupacademy.pedrogabriel.proposta.feign.model.CadastrarCartaoResponse;
 import com.example.zupacademy.pedrogabriel.proposta.model.Proposta;
 import com.example.zupacademy.pedrogabriel.proposta.repository.PropostaRepository;
 import com.example.zupacademy.pedrogabriel.proposta.request.PropostaRequest;
-import com.example.zupacademy.pedrogabriel.proposta.request.SolicitacaoPropostaRequest;
+import com.example.zupacademy.pedrogabriel.proposta.feign.model.SolicitacaoPropostaRequest;
 import com.example.zupacademy.pedrogabriel.proposta.response.PropostaResponse;
-import com.example.zupacademy.pedrogabriel.proposta.response.SolicitacaoPropostaResponse;
-import feign.Feign;
+import com.example.zupacademy.pedrogabriel.proposta.feign.model.SolicitacaoPropostaResponse;
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,9 @@ public class PropostaController {
     @Autowired
     private SolicitacaoPropostaFeign solicitacaoPropostaFeign;
 
+    @Autowired
+    private CadastrarCartaoFeign cadastrarCartaoFeign;
+
     @GetMapping
     public List<PropostaResponse> listar() {
         return propostaRepository.findAll()
@@ -39,31 +44,38 @@ public class PropostaController {
     }
 
     @PostMapping
+    @Transactional
     public ResponseEntity<PropostaResponse> cadastrar(@Valid @RequestBody PropostaRequest propostaRequest) {
 
-        Proposta proposta = propostaRequest.toModel();
+        final Proposta proposta = propostaRepository.save(propostaRequest.toModel());
 
-        proposta.setStatus(validarSolicitacaoProposta(propostaRequest));
+        proposta.setStatus(validarSolicitacaoProposta(proposta));
 
-        proposta = propostaRepository.save(proposta);
+        CadastrarCartaoResponse cartaoResponse = cadastrarCartaoFeign.execute(new CadastrarCartaoRequest(proposta.getNome(), proposta.getCpf_cnpj(),
+                proposta.getId().toString()));
+
+        proposta.setNumero_cartao(cartaoResponse.getId());
+
+        this.propostaRepository.save(proposta);
 
         return ResponseEntity
                 .created(UriComponentsBuilder.fromPath(String.format("/propostas/%s", proposta.getId())).build().toUri())
                 .body(PropostaResponse.converterDe(proposta));
     }
 
-    private StatusPropostaEnum validarSolicitacaoProposta(PropostaRequest propostaRequest) {
+    private StatusPropostaEnum validarSolicitacaoProposta(final Proposta proposta) {
         StatusPropostaEnum status;
 
         try {
             SolicitacaoPropostaResponse solicitacaoPropostaResponse = solicitacaoPropostaFeign
-                    .execute(new SolicitacaoPropostaRequest(propostaRequest.getNome(), propostaRequest.getCpf_cnpj()));
+                    .execute(new SolicitacaoPropostaRequest(proposta.getNome(), proposta.getCpf_cnpj(), proposta.getId().toString()));
 
             status = StatusPropostaEnum.getByRestricao(solicitacaoPropostaResponse.getResultadoSolicitacao());
 
         } catch (FeignException.UnprocessableEntity unprocessableEntity) {
             status = StatusPropostaEnum.NAO_ELEGIVEL;
         }
+
         return status;
     }
 }
